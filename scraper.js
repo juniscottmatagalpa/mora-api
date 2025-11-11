@@ -10,16 +10,18 @@ async function scrapeVideoUrl(url) {
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: executablePath || "/usr/bin/google-chrome", // fallback local (solo si ejecutas fuera de Vercel)
-      headless: true,
+      executablePath: executablePath, // ❗ usa solo el path de chrome-aws-lambda
+      headless: chromium.headless,
       ignoreHTTPSErrors: true,
     });
 
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "networkidle2" });
+
     await page.waitForSelector("video");
 
-    const videoSrc = await page.$eval("video", el => el.src);
+    const videoSrc = await page.$eval("video", (el) => el.src);
+
     return videoSrc;
   } catch (err) {
     console.error("❌ Error en scrapeVideoUrl:", err);
