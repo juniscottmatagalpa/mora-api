@@ -2,23 +2,34 @@ const chromium = require("chrome-aws-lambda");
 const puppeteer = require("puppeteer-core");
 
 async function scrapeVideoUrl(url) {
-  // Lanzar navegador usando la versión de Chrome compatible con Vercel
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath: await chromium.executablePath,
-    headless: chromium.headless,
-  });
+  let browser = null;
 
-  const page = await browser.newPage();
-  await page.goto(url, { waitUntil: "networkidle2" });
+  try {
+    const executablePath = await chromium.executablePath;
 
-  await page.waitForSelector("video");
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath:
+        executablePath ||
+        "/usr/bin/google-chrome", // fallback local
+      headless: chromium.headless,
+    });
 
-  const videoSrc = await page.$eval("video", el => el.src);
+    const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "networkidle2" });
 
-  await browser.close();
-  return videoSrc;
+    await page.waitForSelector("video");
+
+    const videoSrc = await page.$eval("video", el => el.src);
+
+    await browser.close();
+
+    return videoSrc;
+  } catch (error) {
+    if (browser) await browser.close();
+    throw new Error("Fallo en el scraping: " + error.message);
+  }
 }
 
 module.exports = scrapeVideoUrl;
