@@ -1,7 +1,23 @@
 const puppeteer = require('puppeteer');
+const path = require('path');
+
+const CHROME_PATH = path.join(__dirname, 'chrome');
 
 async function scrapeVideoUrl(url) {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: CHROME_PATH,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu'
+    ]
+  });
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: 'networkidle2' });
 
