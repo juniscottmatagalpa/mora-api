@@ -1,35 +1,24 @@
-const puppeteer = require('puppeteer');
-const path = require('path');
-
-const CHROME_PATH = path.join(__dirname, 'chrome');
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 
 async function scrapeVideoUrl(url) {
+  const executablePath = await chromium.executablePath;
+
   const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: CHROME_PATH,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--no-first-run',
-      '--no-zygote',
-      '--single-process',
-      '--disable-gpu'
-    ]
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath,
+    headless: chromium.headless,
   });
+
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: 'networkidle2' });
 
-  // Esperar a que el video se cargue
   await page.waitForSelector('video');
 
-  // Obtener la URL del video
-  const videoElement = await page.$('video');
-  const videoSrc = await videoElement.evaluate(el => el.src);
+  const videoSrc = await page.$eval('video', el => el.src);
 
   await browser.close();
-
   return videoSrc;
 }
 
@@ -50,3 +39,4 @@ async function downloadVideo(videoUrl) {
 }
 
 module.exports = { scrapeVideoUrl, downloadVideo };
+
