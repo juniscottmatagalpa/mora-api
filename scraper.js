@@ -17,4 +17,20 @@ async function scrapeVideoUrl(url) {
   return videoSrc;
 }
 
-module.exports = scrapeVideoUrl;
+async function downloadVideo(videoUrl) {
+  const response = await fetch(videoUrl, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('No se pudo descargar el archivo remoto');
+  }
+
+  const data = await response.arrayBuffer();
+  return data;
+}
+
+module.exports = { scrapeVideoUrl, downloadVideo };
