@@ -5,14 +5,17 @@ async function scrapeVideoUrl(url) {
   let browser;
 
   try {
-    // ✅ Detectar si estamos en Vercel (entorno serverless)
-    const isVercel = !!process.env.VERCEL;
+    // Detectar entorno
+    const isServerless = !!process.env.AWS_REGION || !!process.env.VERCEL;
 
-    // ✅ Obtener la ruta del ejecutable adecuada
-    const executablePath = isVercel
-      ? await chromium.executablePath // usar el empaquetado de chrome-aws-lambda
-      : puppeteer.executablePath();   // usar Chrome local si ejecutas en tu PC
+    // Obtener ruta del ejecutable
+    const executablePath = isServerless
+      ? await chromium.executablePath
+      : puppeteer.executablePath?.() || "/usr/bin/google-chrome-stable";
 
+    console.log("✅ Ejecutando Chrome desde:", executablePath);
+
+    // Lanzar navegador
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
@@ -22,14 +25,21 @@ async function scrapeVideoUrl(url) {
     });
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "networkidle2" });
+    console.log("🌐 Navegando a:", url);
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
 
-    // Esperar que aparezca un elemento <video>
-    await page.waitForSelector("video", { timeout: 10000 });
+    // Esperar que cargue un video
+    await page.waitForSelector("video", { timeout: 15000 });
+    console.log("🎥 Elemento <video> detectado");
 
+    // Extraer fuente del video
     const videoSrc = await page.$eval("video", el => el.src);
 
+    await browser.close();
+
+    if (!videoSrc) throw new Error("No se encontró un enlace de video válido");
     return videoSrc;
+
   } catch (err) {
     console.error("❌ Error en scrapeVideoUrl:", err);
     throw new Error("Fallo en el scraping: " + err.message);
