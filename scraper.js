@@ -5,30 +5,33 @@ async function scrapeVideoUrl(url) {
   let browser = null;
 
   try {
-    const executablePath = await chromium.executablePath;
-
+    // Lanzar Chrome usando la versión compatible con AWS Lambda / Vercel
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath:
-        executablePath ||
-        "/usr/bin/google-chrome", // fallback local
-      headless: chromium.headless,
+      executablePath: await chromium.executablePath || "/usr/bin/chromium-browser",
+      headless: true,
+      ignoreHTTPSErrors: true,
     });
 
     const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "networkidle2" });
 
-    await page.waitForSelector("video");
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
+    // Esperar a que exista un <video>
+    await page.waitForSelector("video", { timeout: 20000 });
+
+    // Obtener la URL del video
     const videoSrc = await page.$eval("video", el => el.src);
-
-    await browser.close();
 
     return videoSrc;
   } catch (error) {
-    if (browser) await browser.close();
-    throw new Error("Fallo en el scraping: " + error.message);
+    console.error("❌ Error en el scraper:", error);
+    throw new Error(`Fallo en el scraping: ${error.message}`);
+  } finally {
+    if (browser !== null) {
+      await browser.close();
+    }
   }
 }
 
