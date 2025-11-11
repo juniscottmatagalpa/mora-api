@@ -1,7 +1,7 @@
 {
   "name": "video-scraper",
   "version": "1.0.0",
-  "description": "A service to scrape video URLs from Sora IA",
+  "description": "Serverless video scraper for Sora IA",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -14,7 +14,6 @@
   "engines": {
     "node": ">=18.x"
   },
-  "license": "ISC",
-  "author": "Tu Nombre"
+  "license": "ISC"
 }
 
