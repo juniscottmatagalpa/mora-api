@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js"
   },
-   "dependencies": {
+  "dependencies": {
     "express": "^4.17.1",
     "puppeteer-core": "^10.4.0",
     "chrome-aws-lambda": "^10.1.0"
@@ -16,4 +16,3 @@
   },
   "license": "ISC"
 }
-
