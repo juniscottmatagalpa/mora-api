@@ -5,12 +5,18 @@ async function scrapeVideoUrl(url) {
   let browser = null;
 
   try {
-    const executablePath = await chromium.executablePath;
+    // Intentar usar el Chrome proporcionado por chrome-aws-lambda
+    let executablePath = await chromium.executablePath;
+
+    // Si no está disponible (por ejemplo, en Vercel localmente)
+    if (!executablePath) {
+      executablePath = "/usr/bin/google-chrome"; // fallback típico
+    }
 
     browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
-      executablePath: executablePath, // ❗ usa solo el path de chrome-aws-lambda
+      executablePath,
       headless: chromium.headless,
       ignoreHTTPSErrors: true,
     });
