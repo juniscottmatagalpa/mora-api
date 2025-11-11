@@ -1,18 +1,9 @@
 {
-  "name": "video-scraper",
-  "version": "1.0.0",
-  "description": "Serverless video scraper for Sora IA",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.17.1",
-    "puppeteer-core": "^10.4.0",
-    "chrome-aws-lambda": "^10.1.0"
-  },
-  "engines": {
-    "node": ">=18.x"
-  },
-  "license": "ISC"
+  "version": 2,
+  "builds": [
+    { "src": "server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/server.js" }
+  ]
 }
